@@ -31,7 +31,10 @@ jobs:
     # Install flows CLI (FIXED)
     - name: Install flows CLI
       run: |
-        curl -fsSL https://raw.githubusercontent.com/flows-network/flows-cli/main/install.sh | bash
+        wget https://github.com/flows-network/flows-cli/releases/download/v0.3.8/flows-linux-amd64
+        chmod +x flows-linux-amd64
+        sudo mv flows-linux-amd64 /usr/local/bin/flows
+        flows --version
 
     # Login to flows.network
     - name: Login flows
