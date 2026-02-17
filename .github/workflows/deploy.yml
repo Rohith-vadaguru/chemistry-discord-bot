@@ -1,22 +1,35 @@
-name: Deploy Discord Bot
+name: Deploy to flows.network
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # Install flows CLI (PREBUILT — no rust build)
       - name: Install flows CLI
-        run: cargo install --git https://github.com/flows-network/flows-cli
+        run: |
+          curl -L https://github.com/flows-network/flows-cli/releases/latest/download/flows-x86_64-unknown-linux-gnu.tar.gz -o flows.tar.gz
+          tar -xvf flows.tar.gz
+          chmod +x flows
+          sudo mv flows /usr/local/bin/flows
 
-      - name: Deploy to flows.network
-        env:
-          FLOWS_API_TOKEN: ${{ secrets.FLOWS_API_TOKEN }}
+      # Verify installation
+      - name: Check flows CLI
+        run: flows --version
+
+      # Login to flows
+      - name: Login flows
+        run: flows login --token ${{ secrets.FLOWS_TOKEN }}
+
+      # Deploy bot
+      - name: Deploy flow
         run: flows deploy
