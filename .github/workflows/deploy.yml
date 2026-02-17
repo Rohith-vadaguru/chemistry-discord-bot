@@ -15,35 +15,33 @@ jobs:
 
     # Install Rust
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: stable
-        target: wasm32-wasi
-        override: true
+        targets: wasm32-wasip1
 
-    # Add WASI target
+    # Add WASI target (NEW)
     - name: Add WASI target
-      run: rustup target add wasm32-wasi
+      run: rustup target add wasm32-wasip1
 
-    # Install cargo-wasi
-    - name: Install cargo-wasi
-      run: cargo install cargo-wasi
+    # Install cargo-component (required for WASI networking)
+    - name: Install cargo-component
+      run: cargo install cargo-component
 
-    # Build WASM (IMPORTANT)
-    - name: Build wasm
-      run: cargo wasi build --release
+    # Build WASM (CORRECT BUILD)
+    - name: Build project
+      run: cargo component build --release
 
-    # Install flows CLI
+    # Install flows CLI (WORKING LINK)
     - name: Install flows CLI
       run: |
         sudo apt-get update
         sudo apt-get install -y wget
-        wget https://github.com/flows-network/flows-cli/releases/download/v0.2.1/flows-x86_64-unknown-linux-gnu.tar.gz
+        wget https://github.com/flows-network/flows-cli/releases/latest/download/flows-x86_64-unknown-linux-gnu.tar.gz
         tar -xzf flows-x86_64-unknown-linux-gnu.tar.gz
         chmod +x flows
         sudo mv flows /usr/local/bin/flows
 
-    - name: Check flows CLI
+    - name: Check flows
       run: flows --version
 
     # Login flows
@@ -53,5 +51,5 @@ jobs:
       run: flows login --token $FLOWS_TOKEN
 
     # Deploy
-    - name: Deploy
+    - name: Deploy to flows
       run: flows deploy
