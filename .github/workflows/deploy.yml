@@ -1,35 +1,50 @@
-name: Deploy to flows.network
+name: Deploy Discord Bot
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
 
-      - name: Checkout repo
-        uses: actions/checkout@v3
+    # Install Rust
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
 
-      # Install flows CLI (PREBUILT — no rust build)
-      - name: Install flows CLI
-        run: |
-          curl -L https://github.com/flows-network/flows-cli/releases/latest/download/flows-x86_64-unknown-linux-gnu.tar.gz -o flows.tar.gz
-          tar -xvf flows.tar.gz
-          chmod +x flows
-          sudo mv flows /usr/local/bin/flows
+    # Build the bot
+    - name: Build project
+      run: cargo build --release
 
-      # Verify installation
-      - name: Check flows CLI
-        run: flows --version
+    # Install flows CLI (FIXED)
+    - name: Install flows CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget
 
-      # Login to flows
-      - name: Login flows
-        run: flows login --token ${{ secrets.FLOWS_TOKEN }}
+        wget https://github.com/flows-network/flows-cli/releases/download/v0.2.1/flows-x86_64-unknown-linux-gnu.tar.gz
+        tar -xzf flows-x86_64-unknown-linux-gnu.tar.gz
+        chmod +x flows
+        sudo mv flows /usr/local/bin/flows
 
-      # Deploy bot
-      - name: Deploy flow
-        run: flows deploy
+    # Check installation
+    - name: Check flows CLI
+      run: flows --version
+
+    # Login to flows.network
+    - name: Login flows
+      env:
+        FLOWS_TOKEN: ${{ secrets.FLOWS_TOKEN }}
+      run: flows login --token $FLOWS_TOKEN
+
+    # Deploy bot
+    - name: Deploy to flows.network
+      run: flows deploy
