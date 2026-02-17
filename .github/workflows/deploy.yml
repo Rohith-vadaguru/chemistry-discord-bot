@@ -6,23 +6,17 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v3
-
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-
-      - name: Build project
-        run: cargo build --release
 
       - name: Install flows CLI
         run: cargo install flows-cli
 
       - name: Deploy to flows.network
+        env:
+          FLOWS_API_TOKEN: ${{ secrets.FLOWS_API_TOKEN }}
         run: flows deploy
